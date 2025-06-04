@@ -5,22 +5,14 @@ import {
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
-// Client-side Supabase client
-export const createClientSupabase = () =>
-  createClientComponentClient({
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  });
+// Client-side Supabase client (for use in components)
+export const createClientSupabase = () => createClientComponentClient();
 
-// Server-side Supabase client
+// Server-side Supabase client (for use in server components/actions)
 export const createServerSupabase = () =>
-  createServerComponentClient({
-    cookies,
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  });
+  createServerComponentClient({ cookies });
 
-// Admin Supabase client
+// Admin Supabase client (for admin operations)
 export const createAdminSupabase = () =>
   createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
