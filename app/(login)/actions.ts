@@ -222,12 +222,37 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 });
 
 export async function signOut() {
-  const user = (await getUser()) as User;
-  const userWithTeam = await getUserWithTeam(user.id);
-  await logActivity(userWithTeam?.teamId, user.id, ActivityType.SIGN_OUT);
-  (await cookies()).delete('session');
-}
+  try {
+    // Get user data before clearing the session
+    const user = await getUser();
 
+    // Clear the session cookie first
+    const cookieStore = await cookies();
+    cookieStore.delete("session");
+
+    // Only log activity if we have a valid user
+    if (user?.id) {
+      try {
+        const userWithTeam = await getUserWithTeam(user.id);
+        await logActivity(
+          userWithTeam?.team?.id || null,
+          user.id,
+          ActivityType.SIGN_OUT
+        );
+      } catch (error) {
+        // Log the error but don't fail the sign out
+        console.error("Failed to log sign out activity:", error);
+      }
+    }
+  } catch (error) {
+    // If there's any error, just clear the cookie and continue
+    console.error("Error during sign out:", error);
+    const cookieStore = await cookies();
+    cookieStore.delete("session");
+  }
+
+  redirect("/sign-in");
+}
 const updatePasswordSchema = z.object({
   currentPassword: z.string().min(8).max(100),
   newPassword: z.string().min(8).max(100),
